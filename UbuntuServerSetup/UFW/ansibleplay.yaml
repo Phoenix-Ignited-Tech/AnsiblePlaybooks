@@ -1,7 +1,6 @@
-
 ---
 - name: Install and configure UFW
-  hosts: all
+  hosts: myhosts
   become: yes
 
   vars:
@@ -18,20 +17,22 @@
       ufw:
         state: enabled
 
-    - name: Set UFW default policy to deny incoming and allow outgoing
-      ufw:
-        state: enabled
-        default: deny incoming
-        direction: incoming
-
-    - name: Set UFW default policy to allow outgoing
-      ufw:
-        state: enabled
-        default: allow outgoing
-        direction: outgoing
-
     - name: Allow custom port through UFW
       ufw:
         rule: allow
         port: "{{ custom_port }}"
         proto: tcp
+
+    - name: Set UFW default policy to deny incoming
+      ufw:
+        state: enabled
+        default: deny
+        direction: incoming
+
+    - name: Set UFW default policy to allow outgoing
+      ufw:
+        state: enabled
+        default: allow
+        direction: outgoing
+
+    
