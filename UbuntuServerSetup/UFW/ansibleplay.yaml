@@ -17,7 +17,13 @@
       ufw:
         state: enabled
 
-    - name: Set UFW default policy to deny incoming and allow outgoing
+    - name: Allow custom port through UFW
+      ufw:
+        rule: allow
+        port: "{{ custom_port }}"
+        proto: tcp
+
+    - name: Set UFW default policy to deny incoming
       ufw:
         state: enabled
         default: deny
@@ -29,8 +35,4 @@
         default: allow
         direction: outgoing
 
-    - name: Allow custom port through UFW
-      ufw:
-        rule: allow
-        port: "{{ custom_port }}"
-        proto: tcp
+    
