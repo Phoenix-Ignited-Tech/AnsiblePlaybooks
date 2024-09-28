@@ -4,7 +4,7 @@
   become: yes
 
   vars:
-    jail_local_src: "files/jail.local"  # Path to your jail.local file
+    jail_local_src: "./JailConf"  # Path to your jail.local file
 
     - name: Install Fail2Ban (Debian-based systems)
       apt:
