@@ -6,6 +6,7 @@
   vars:
     jail_local_src: "./JailConf"  # Path to your jail.local file
 
+  tasks:
     - name: Install Fail2Ban (Debian-based systems)
       apt:
         name: fail2ban
