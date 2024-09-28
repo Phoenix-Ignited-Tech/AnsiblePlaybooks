@@ -1,5 +1,6 @@
 - name: Copy the hardened SSHD_CONFIG file to the remote server
   hosts: myhosts
+  become: yes
   tasks:
    - name: Copy the hardened SSHD_CONFIG file to the remote server
      ansible.builtin.copy:
