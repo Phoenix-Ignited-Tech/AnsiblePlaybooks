@@ -1,0 +1,58 @@
+---
+- name: Install and configure UFW and Fail2Ban
+  hosts: myhosts
+  become: yes
+
+  vars:
+    custom_port: 12345  # Replace this with your custom port number
+    jail_local_src: "files/jail.local"  # Path to your jail.local file
+
+  tasks:
+    - name: Install UFW (Debian-based systems)
+      apt:
+        name: ufw
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure UFW is enabled
+      ufw:
+        state: enabled
+
+    - name: Set UFW default policy to deny incoming and allow outgoing
+      ufw:
+        state: enabled
+        default: deny incoming
+        direction: incoming
+
+    - name: Set UFW default policy to allow outgoing
+      ufw:
+        state: enabled
+        default: allow outgoing
+        direction: outgoing
+
+    - name: Allow custom port through UFW
+      ufw:
+        rule: allow
+        port: "{{ custom_port }}"
+        proto: tcp
+
+    - name: Install Fail2Ban (Debian-based systems)
+      apt:
+        name: fail2ban
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Copy custom jail.local configuration file
+      copy:
+        src: "{{ jail_local_src }}"
+        dest: /etc/fail2ban/jail.local
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure Fail2Ban is running and enabled on boot
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
