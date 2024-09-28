@@ -1,0 +1,9 @@
+[DEFAULT]
+# Ban IP for 10 minutes after 5 failed login attempts
+bantime  = 600
+findtime  = 600
+maxretry = 5
+
+# Enable ssh jail
+[sshd]
+enabled = true

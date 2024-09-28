@@ -1,1 +1,38 @@
+---
+- name: Install and configure UFW
+  hosts: myhosts
+  become: yes
 
+  vars:
+    custom_port: 12345  # Replace this with your custom port number
+
+  tasks:
+    - name: Install UFW
+      apt:
+        name: ufw
+        state: present
+        update_cache: yes
+
+    - name: Ensure UFW is enabled
+      ufw:
+        state: enabled
+
+    - name: Allow custom port through UFW
+      ufw:
+        rule: allow
+        port: "{{ custom_port }}"
+        proto: tcp
+
+    - name: Set UFW default policy to deny incoming
+      ufw:
+        state: enabled
+        default: deny
+        direction: incoming
+
+    - name: Set UFW default policy to allow outgoing
+      ufw:
+        state: enabled
+        default: allow
+        direction: outgoing
+
+    

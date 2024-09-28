@@ -1,0 +1,1 @@
+This playbook installs and configures fail2ban. This playbook installs fail2ban (supports Ubuntu & Fedora) and copies a JailConf file to /etc/fail2ban/jail.local on the remote server. Update the JailConf file for your specific use cases! The only included jail (as of currently) is [sshd] and a [customport] jail. The [customport] jail is "unconfigured" so to say.
