@@ -3,7 +3,7 @@
   tasks:
    - name: Copy the hardened SSHD_CONFIG file to the remote server
      ansible.builtin.copy:
-        src: ./hardened-ssh-config  # Path to your local sshd_config
+        src: ./Hardened-SSHD-CONFIG  # Path to your local sshd_config
         dest: /etc/ssh/sshd_config      # Destination path on the remote system
         owner: root
         group: root
