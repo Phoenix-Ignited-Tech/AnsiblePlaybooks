@@ -1,5 +1,17 @@
-[defaults]
-INVENTORY = hosts
+---
 
-[ssh_connections]
-pipelining = true
+#####This file is in development DO NOT USE##########
+
+- name: Copy the hardened SSHD_CONFIG file to the remote server
+  hosts: all
+  tasks:
+   - name: Copy the hardened SSHD_CONFIG file to the remote server
+     ansible.builtin.copy:
+        src: /path/to/your/sshd_config  # Path to your local sshd_config
+        dest: /etc/ssh/sshd_config      # Destination path on the remote system
+        owner: root
+        group: root
+        mode: '0600'                    # Secure permissions
+     notify:
+        - Restart sshd
+
