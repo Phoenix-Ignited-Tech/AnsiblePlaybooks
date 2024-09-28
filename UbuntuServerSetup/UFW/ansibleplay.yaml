@@ -1,7 +1,7 @@
 
 ---
 - name: Install and configure UFW
-  hosts: all
+  hosts: myhosts
   become: yes
 
   vars:
