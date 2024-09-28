@@ -1,0 +1,1 @@
+This playbook copies a hardened sshd_config file to a remote server. Simple yet powerful! Be sure to replace the Port and AllowUsers values with your correct values. Let me know what you think of it! Docs coming soon!
