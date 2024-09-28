@@ -11,4 +11,9 @@
         mode: '0600'                    # Secure permissions
      notify:
         - Restart sshd
+  handlers:
+    - name: Restart sshd
+      service:
+        name: sshd
+        state: restarted
 
