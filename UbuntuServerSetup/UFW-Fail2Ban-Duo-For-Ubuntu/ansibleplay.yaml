@@ -4,31 +4,34 @@
   become: yes
 
   vars:
-    custom_port: 12345  # Replace this with your custom port number
-    jail_local_src: "files/jail.local"  # Path to your jail.local file
+    custom_port: 12345         # Replace this with your custom port number
+    jail_local_src: "./JailConf"  # Path to your jail.local file
 
   tasks:
-    - name: Install UFW (Debian-based systems)
+    - name: Ensure the system is Debian/Ubuntu based
+      debug:
+        msg: "This playbook is only supported on Debian/Ubuntu systems."
+      when: ansible_facts['os_family'] != "Debian"
+      failed_when: ansible_facts['os_family'] != "Debian"
+
+    # UFW Configuration
+    - name: Install UFW
       apt:
         name: ufw
         state: present
-      when: ansible_os_family == "Debian"
+        update_cache: yes
 
-    - name: Ensure UFW is enabled
+    - name: Set UFW default policy to deny incoming
       ufw:
-        state: enabled
-
-    - name: Set UFW default policy to deny incoming and allow outgoing
-      ufw:
-        state: enabled
-        default: deny incoming
+        default: deny
         direction: incoming
+        state: enabled
 
     - name: Set UFW default policy to allow outgoing
       ufw:
-        state: enabled
-        default: allow outgoing
+        default: allow
         direction: outgoing
+        state: enabled
 
     - name: Allow custom port through UFW
       ufw:
@@ -36,20 +39,37 @@
         port: "{{ custom_port }}"
         proto: tcp
 
-    - name: Install Fail2Ban (Debian-based systems)
+    - name: Ensure UFW is enabled
+      ufw:
+        state: enabled
+
+    # Fail2Ban Configuration
+    - name: Install Fail2Ban
       apt:
         name: fail2ban
         state: present
         update_cache: yes
-      when: ansible_os_family == "Debian"
 
-    - name: Copy custom jail.local configuration file
+    - name: Check if jail.local file exists
+      stat:
+        path: "{{ jail_local_src }}"
+      register: jail_local_check
+
+    - name: Backup existing jail.local file
+      copy:
+        src: /etc/fail2ban/jail.local
+        dest: /etc/fail2ban/jail.local.bak
+        remote_src: yes
+      when: jail_local_check.stat.exists
+
+    - name: Copy custom jail.local configuration file if it exists
       copy:
         src: "{{ jail_local_src }}"
         dest: /etc/fail2ban/jail.local
         owner: root
         group: root
         mode: '0644'
+      when: jail_local_check.stat.exists
 
     - name: Ensure Fail2Ban is running and enabled on boot
       service:
