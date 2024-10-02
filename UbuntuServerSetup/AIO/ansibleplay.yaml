@@ -16,6 +16,7 @@
       - fail2ban
       - ufw
     jail_local_src: "./JailConf"  # Path to your jail.local file
+    custom_port: 12345  # Replace this with your custom port number
 
   
   tasks:
@@ -58,6 +59,29 @@
         enabled: yes
         
   ##CONFIGURE UFW##
+
+    - name: Ensure UFW is enabled
+      ufw:
+        state: enabled
+
+    - name: Allow custom port through UFW
+      ufw:
+        rule: allow
+        port: "{{ custom_port }}"
+        proto: tcp
+
+    - name: Set UFW default policy to deny incoming
+      ufw:
+        state: enabled
+        default: deny
+        direction: incoming
+
+    - name: Set UFW default policy to allow outgoing
+      ufw:
+        state: enabled
+        default: allow
+        direction: outgoing
+  
   ##HARDEN SSHD_CONFIG##
   ##REBOOT SERVER##
   ##TEST SERVER ACCESS##
