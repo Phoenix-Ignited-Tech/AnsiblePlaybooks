@@ -45,7 +45,7 @@
   ##CONFIGURE FAIL2BAN##
   
     - name: Copy custom jail.local configuration file
-       copy:
+       ansible.builtin.copy:
          src: "{{ jail_local_src }}"
          dest: /etc/fail2ban/jail.local
          owner: root
@@ -81,7 +81,24 @@
         state: enabled
         default: allow
         direction: outgoing
-  
+       
   ##HARDEN SSHD_CONFIG##
+     
+    - name: Copy the hardened SSHD_CONFIG file to the remote server
+     ansible.builtin.copy:
+        src: ./Hardened-SSHD-CONFIG  # Path to your local sshd_config
+        dest: /etc/ssh/sshd_config      # Destination path on the remote system
+        owner: root
+        group: root
+        mode: '0600'                    # Secure permissions
+     notify:
+        - Restart sshd
+  handlers:
+    - name: Restart sshd
+      service:
+        name: sshd
+        state: restarted
+  
+     
   ##REBOOT SERVER##
   ##TEST SERVER ACCESS##
