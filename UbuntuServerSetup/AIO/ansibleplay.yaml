@@ -1,8 +1,9 @@
+---
 - name: All in One Ubuntu Server Setup Ansible Playbook
-  host: myhosts
+  hosts: myhosts
   become: yes
 
- vars:
+  vars:
     packages:
       - vim
       - git
@@ -28,20 +29,16 @@
         is_admin: no
         pub_key_path: "/path/to/keys/charlie.pub"
 
-
-  
   tasks:
-  
-  ##ENSURE SYSTEM IS DEBIAN BASED##
-  
-   - name: Ensure the system is Debian/Ubuntu based
+    ## ENSURE SYSTEM IS DEBIAN BASED ##
+    - name: Ensure the system is Debian/Ubuntu based
       debug:
         msg: "This playbook is only supported on Debian/Ubuntu systems."
       when: ansible_facts['os_family'] != "Debian"
       failed_when: ansible_facts['os_family'] != "Debian"
 
-  ##CREATE USER ACCOUNTS##
-   - name: Create user accounts
+    ## CREATE USER ACCOUNTS ##
+    - name: Create user accounts
       user:
         name: "{{ item.username }}"
         state: present
@@ -49,66 +46,63 @@
         shell: /bin/bash
       loop: "{{ users }}"
 
-   - name: Create .ssh directory for each user
-     file:
-       path: "/home/{{ item.username }}/.ssh"
-       state: directory
-       owner: "{{ item.username }}"
-       group: "{{ item.username }}"
-       mode: '0700'
-     loop: "{{ users }}"
+    - name: Create .ssh directory for each user
+      file:
+        path: "/home/{{ item.username }}/.ssh"
+        state: directory
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        mode: '0700'
+      loop: "{{ users }}"
 
-   - name: Copy SSH public key from file for each user
-     ansible.builtin.copy:
-       src: "{{ item.pub_key_path }}"
-       dest: "/home/{{ item.username }}/.ssh/authorized_keys"
-       owner: "{{ item.username }}"
-       group: "{{ item.username }}"
-       mode: '0600'
-     loop: "{{ users }}"
+    - name: Copy SSH public key from file for each user
+      ansible.builtin.copy:
+        src: "{{ item.pub_key_path }}"
+        dest: "/home/{{ item.username }}/.ssh/authorized_keys"
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        mode: '0600'
+      loop: "{{ users }}"
 
-   - name: Ensure sudo group has passwordless sudo (for admins)
-     lineinfile:
-       path: /etc/sudoers
-       regexp: '^%sudo'
-       line: '%sudo ALL=(ALL) NOPASSWD: ALL'
-       state: present
-     when: item.is_admin | bool
-     loop: "{{ users }}"
-     loop_control:
-       label: "{{ item.username }}"
-      
-  ##INSTALL COMMON PACKAGES##
-   
+    - name: Ensure sudo group has passwordless sudo (for admins)
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        state: present
+      when: item.is_admin | bool
+      loop: "{{ users }}"
+      loop_control:
+        label: "{{ item.username }}"
+
+    ## INSTALL COMMON PACKAGES ##
     - name: Update apt cache and upgrade system packages
       apt:
         update_cache: yes
         upgrade: dist
-     
+
     - name: Install commonly used software packages
       apt:
         name: "{{ packages }}"
         state: present
         update_cache: yes
-        
-  ##CONFIGURE FAIL2BAN##
-  
+
+    ## CONFIGURE FAIL2BAN ##
     - name: Copy custom jail.local configuration file
-       ansible.builtin.copy:
-         src: "{{ jail_local_src }}"
-         dest: /etc/fail2ban/jail.local
-         owner: root
-         group: root
-         mode: '0644'
+      ansible.builtin.copy:
+        src: "{{ jail_local_src }}"
+        dest: /etc/fail2ban/jail.local
+        owner: root
+        group: root
+        mode: '0644'
 
     - name: Ensure Fail2Ban is running and enabled on boot
       service:
         name: fail2ban
         state: started
         enabled: yes
-        
-  ##CONFIGURE UFW##
 
+    ## CONFIGURE UFW ##
     - name: Ensure UFW is enabled
       ufw:
         state: enabled
@@ -130,24 +124,32 @@
         state: enabled
         default: allow
         direction: outgoing
-       
-  ##HARDEN SSHD_CONFIG##
-     
+
+    ## HARDEN SSHD_CONFIG ##
     - name: Copy the hardened SSHD_CONFIG file to the remote server
-     ansible.builtin.copy:
+      ansible.builtin.copy:
         src: ./Hardened-SSHD-CONFIG  # Path to your local sshd_config
-        dest: /etc/ssh/sshd_config      # Destination path on the remote system
+        dest: /etc/ssh/sshd_config    # Destination path on the remote system
         owner: root
         group: root
-        mode: '0600'                    # Secure permissions
-     notify:
+        mode: '0600'                  # Secure permissions
+      notify:
         - Restart sshd
+
   handlers:
     - name: Restart sshd
       service:
         name: sshd
         state: restarted
+
+    ## REBOOT SERVER ##
+    - name: Reboot the server
+      reboot:
+        reboot_timeout: 600  # Wait up to 600 seconds (10 minutes) for the server to reboot
+
+    ## TEST SERVER ACCESS ##
+    - name: Test connection after reboot
+      wait_for_connection:
+        timeout: 300  # Wait up to 300 seconds (5 minutes) for the server to become reachable again
+
   
-     
-  ##REBOOT SERVER##
-  ##TEST SERVER ACCESS##
