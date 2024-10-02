@@ -139,7 +139,7 @@
   handlers:
     - name: Restart sshd
       service:
-        name: sshd
+        name: "{{ (ansible_facts.services['sshd'] is defined) | ternary('sshd', 'ssh') }}"
         state: restarted
 
     ## REBOOT SERVER ##
