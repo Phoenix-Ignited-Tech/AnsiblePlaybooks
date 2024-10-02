@@ -1,1 +1,47 @@
+- name: All in One Ubuntu Server Setup Ansible Playbook
+  host: myhosts
+  become: yes
 
+ vars:
+    packages:
+      - vim
+      - git
+      - htop
+      - curl
+      - wget
+      - unzip
+      - build-essential
+      - net-tools
+      - tree
+      - fail2ban
+      - ufw
+
+  
+  tasks:
+  
+  ##ENSURE SYSTEM IS DEBIAN BASED##
+  
+   - name: Ensure the system is Debian/Ubuntu based
+      debug:
+        msg: "This playbook is only supported on Debian/Ubuntu systems."
+      when: ansible_facts['os_family'] != "Debian"
+      failed_when: ansible_facts['os_family'] != "Debian"
+      
+  ##INSTALL COMMON PACKAGES##
+   
+    - name: Update apt cache and upgrade system packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install commonly used software packages
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+   
+  ##CONFIGURE FAIL2BAN##
+  ##CONFIGURE UFW##
+  ##HARDEN SSHD_CONFIG##
+  ##REBOOT SERVER##
+  ##TEST SERVER ACCESS##
