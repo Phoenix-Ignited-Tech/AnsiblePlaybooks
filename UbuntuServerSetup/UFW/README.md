@@ -1,1 +1,1 @@
-this playbook installs UFW on debian based systems. It configures the default UFW rules to deny incoming requests and allow outgoing requests as well as is configured to allow traffic via a custom port, add allowed ports as needed!
+This playbook installs UFW on debian based systems. It configures the default UFW rules to deny incoming requests and allow outgoing requests as well as is configured to allow traffic via a custom port, add allowed ports as needed!
