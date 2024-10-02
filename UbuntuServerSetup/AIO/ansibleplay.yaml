@@ -15,6 +15,7 @@
       - tree
       - fail2ban
       - ufw
+    jail_local_src: "./JailConf"  # Path to your jail.local file
 
   
   tasks:
@@ -33,14 +34,29 @@
       apt:
         update_cache: yes
         upgrade: dist
-
+     
     - name: Install commonly used software packages
       apt:
         name: "{{ packages }}"
         state: present
         update_cache: yes
-   
+        
   ##CONFIGURE FAIL2BAN##
+  
+    - name: Copy custom jail.local configuration file
+       copy:
+         src: "{{ jail_local_src }}"
+         dest: /etc/fail2ban/jail.local
+         owner: root
+         group: root
+         mode: '0644'
+
+    - name: Ensure Fail2Ban is running and enabled on boot
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+        
   ##CONFIGURE UFW##
   ##HARDEN SSHD_CONFIG##
   ##REBOOT SERVER##
