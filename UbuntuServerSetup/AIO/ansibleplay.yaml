@@ -17,6 +17,17 @@
       - ufw
     jail_local_src: "./JailConf"  # Path to your jail.local file
     custom_port: 12345  # Replace this with your custom port number
+    users:
+      - username: alice
+        is_admin: yes
+        pub_key_path: "/path/to/keys/alice.pub"
+      - username: bob
+        is_admin: no
+        pub_key_path: "/path/to/keys/bob.pub"
+      - username: charlie
+        is_admin: no
+        pub_key_path: "/path/to/keys/charlie.pub"
+
 
   
   tasks:
@@ -28,6 +39,44 @@
         msg: "This playbook is only supported on Debian/Ubuntu systems."
       when: ansible_facts['os_family'] != "Debian"
       failed_when: ansible_facts['os_family'] != "Debian"
+
+  ##CREATE USER ACCOUNTS##
+   - name: Create user accounts
+      user:
+        name: "{{ item.username }}"
+        state: present
+        groups: "{{ 'sudo' if item.is_admin else '' }}"
+        shell: /bin/bash
+      loop: "{{ users }}"
+
+   - name: Create .ssh directory for each user
+     file:
+       path: "/home/{{ item.username }}/.ssh"
+       state: directory
+       owner: "{{ item.username }}"
+       group: "{{ item.username }}"
+       mode: '0700'
+     loop: "{{ users }}"
+
+   - name: Copy SSH public key from file for each user
+     ansible.builtin.copy:
+       src: "{{ item.pub_key_path }}"
+       dest: "/home/{{ item.username }}/.ssh/authorized_keys"
+       owner: "{{ item.username }}"
+       group: "{{ item.username }}"
+       mode: '0600'
+     loop: "{{ users }}"
+
+   - name: Ensure sudo group has passwordless sudo (for admins)
+     lineinfile:
+       path: /etc/sudoers
+       regexp: '^%sudo'
+       line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+       state: present
+     when: item.is_admin | bool
+     loop: "{{ users }}"
+     loop_control:
+       label: "{{ item.username }}"
       
   ##INSTALL COMMON PACKAGES##
    
